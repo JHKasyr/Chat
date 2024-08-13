@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat</title>
+    <link rel="stylesheet" href="./css/styles.css">
+    <!-- Importação do Google Icons -->
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+</head>
+<body>
+    <div class="chat-container">
+        <div class="chat-log" id="chat-container">
+            <!-- As mensagens serão adicionadas aqui -->
+        </div>
+        <div class="chat-form">
+            <input type="text" id="messageInput" class="chat-input" placeholder="Digite sua mensagem...">
+            <button id="sendButton" class="send-button">
+                <span class="material-icons send-icon">send</span>
+            </button>
+        </div>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        const socket = io();
+        const chatContainer = document.getElementById('chat-container');
+        const messageInput = document.getElementById('messageInput');
+        const sendButton = document.getElementById('sendButton');
+
+        function sendMessage() {
+            const message = messageInput.value;
+            if (message.trim() !== '') {
+                // Exibe a mensagem do cliente
+                const clientMessage = document.createElement('div');
+                clientMessage.className = 'client-message';
+                clientMessage.textContent = message;
+                chatContainer.appendChild(clientMessage);
+
+                // Envia a mensagem ao socket
+                socket.emit('message', message);
+                messageInput.value = ''; // Limpa o input
+                chatContainer.scrollTop = chatContainer.scrollHeight; // Rolagem automática para a última mensagem
+            }
+        }
+
+        sendButton.addEventListener('click', sendMessage);
+
+        messageInput.addEventListener('keydown', (event) => {
+            if (event.key === 'Enter') {
+                sendMessage();
+            }
+        });
+
+        socket.on('message', (msg) => {
+            // Exibe a mensagem recebida do socket
+            const socketMessage = document.createElement('div');
+            socketMessage.className = 'socket-message';
+            socketMessage.textContent = msg;
+            chatContainer.appendChild(socketMessage);
+            chatContainer.scrollTop = chatContainer.scrollHeight; // Rolagem automática para a última mensagem
+        });
+    </script>
+</body>
+</html>
